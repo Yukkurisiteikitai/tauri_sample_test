@@ -19,6 +19,7 @@ fn add(a: i32, b: i32) -> i32 {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_http::init()) // HTTPプラグインを追加
         .setup(|app| {
             #[cfg(debug_assertions)]
             {

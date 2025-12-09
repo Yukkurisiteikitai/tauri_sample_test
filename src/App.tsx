@@ -1,59 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Send, MessageCircle, User, Search, ArrowLeft, LogIn, LogOut, Users } from 'lucide-react';
 
-// Supabase設定（実際の使用時は環境変数から読み込み）
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-const BRAVE_API_KEY = 'YOUR_BRAVE_API_KEY';
-
-// Supabaseクライアントのモック（実際は: import { createClient } from '@supabase/supabase-js'）
-const createSupabaseClient = () => {
-  return {
-    auth: {
-      signInWithOAuth: async ({ provider }) => {
-        console.log(`Sign in with ${provider}`);
-        // 実際: return await supabase.auth.signInWithOAuth({ provider })
-        return { data: { user: { id: 'demo-user', email: 'demo@example.com' } }, error: null };
-      },
-      signOut: async () => {
-        console.log('Sign out');
-        return { error: null };
-      },
-      getSession: async () => {
-        // デモ用のモックセッション
-        return { 
-          data: { 
-            session: { 
-              user: { id: 'demo-user-1', email: 'user@example.com', user_metadata: { name: 'デモユーザー' } } 
-            } 
-          }, 
-          error: null 
-        };
-      },
-      onAuthStateChange: (callback) => {
-        // 実際: supabase.auth.onAuthStateChange(callback)
-        return { data: { subscription: { unsubscribe: () => {} } } };
-      }
-    },
-    from: (table) => ({
-      select: () => ({
-        order: () => ({
-          limit: async () => ({ data: [], error: null })
-        })
-      }),
-      insert: async (data) => {
-        console.log('Insert:', data);
-        return { data, error: null };
-      }
-    }),
-    channel: (name) => ({
-      on: (event, filter, callback) => ({ subscribe: () => ({}) }),
-      subscribe: () => ({})
-    })
-  };
-};
-
-const supabase = createSupabaseClient();
+// 設定
+const BRAVE_API_KEY = 'BSATOBIc-hgGEkP7SRcn_q0HLzeMPMK';
 
 // ブラウザコンポーネント
 function BrowserApp() {
@@ -70,74 +19,29 @@ function BrowserApp() {
     setCurrentPage('results');
     
     try {
-      // Brave Search API呼び出し（実際の実装）
-      // ブラウザのfetch APIは自動的にgzip解凍してくれます
-      const response = await fetch(
-        `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(searchQuery)}&count=10`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Accept-Encoding': 'gzip', // gzip圧縮を受け入れる
-            'X-Subscription-Token': BRAVE_API_KEY
+      // デモ用のモック結果
+      setTimeout(() => {
+        setSearchResults([
+          {
+            title: `${searchQuery}に関する情報 - Wikipedia`,
+            url: 'https://ja.wikipedia.org/wiki/' + searchQuery,
+            description: `${searchQuery}についての詳細な情報。歴史、概要、関連情報などを含む包括的な記事です。`
+          },
+          {
+            title: `${searchQuery}の最新ニュース`,
+            url: 'https://news.example.com/' + searchQuery,
+            description: `${searchQuery}に関する最新のニュースと動向をお届けします。`
+          },
+          {
+            title: `${searchQuery}ガイド - 初心者向け`,
+            url: 'https://guide.example.com/' + searchQuery,
+            description: `初心者でもわかる${searchQuery}の基礎知識と活用方法を解説します。`
           }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      // fetch APIが自動的にgzipを解凍してJSONをパース可能にします
-      const data = await response.json();
-      
-      // Brave APIのレスポンス構造に合わせて結果を抽出
-      const results = data.web?.results || [];
-      setSearchResults(results.map(result => ({
-        title: result.title,
-        url: result.url,
-        description: result.description
-      })));
-      
-      setLoading(false);
-      
-      // デモ用のフォールバック（APIキーが無効な場合）
-      if (results.length === 0 && BRAVE_API_KEY === 'YOUR_BRAVE_API_KEY') {
-        setTimeout(() => {
-          setSearchResults([
-            {
-              title: `${searchQuery}に関する情報 - Wikipedia`,
-              url: 'https://ja.wikipedia.org/wiki/' + searchQuery,
-              description: `${searchQuery}についての詳細な情報。歴史、概要、関連情報などを含む包括的な記事です。`
-            },
-            {
-              title: `${searchQuery}の最新ニュース`,
-              url: 'https://news.example.com/' + searchQuery,
-              description: `${searchQuery}に関する最新のニュースと動向をお届けします。`
-            },
-            {
-              title: `${searchQuery}ガイド - 初心者向け`,
-              url: 'https://guide.example.com/' + searchQuery,
-              description: `初心者でもわかる${searchQuery}の基礎知識と活用方法を解説します。`
-            }
-          ]);
-        }, 100);
-      }
+        ]);
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error('Search error:', error);
-      // エラー時はデモデータを表示
-      setSearchResults([
-        {
-          title: `${searchQuery}に関する情報 - Wikipedia`,
-          url: 'https://ja.wikipedia.org/wiki/' + searchQuery,
-          description: `${searchQuery}についての詳細な情報。歴史、概要、関連情報などを含む包括的な記事です。`
-        },
-        {
-          title: `${searchQuery}の最新ニュース`,
-          url: 'https://news.example.com/' + searchQuery,
-          description: `${searchQuery}に関する最新のニュースと動向をお届けします。`
-        }
-      ]);
       setLoading(false);
     }
   };
@@ -249,7 +153,7 @@ function BrowserApp() {
 function ChatApp({ user }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [contacts, setContacts] = useState([
+  const [contacts] = useState([
     { id: 1, name: '山田太郎', avatar: '🧑', lastMessage: 'おはよう!', online: true },
     { id: 2, name: '佐藤花子', avatar: '👩', lastMessage: 'ありがとう', online: false },
     { id: 3, name: '鈴木一郎', avatar: '👨', lastMessage: 'また後で', online: true }
@@ -265,55 +169,28 @@ function ChatApp({ user }) {
     scrollToBottom();
   }, [messages]);
 
-  // Supabaseからメッセージを取得
   useEffect(() => {
     if (!selectedContact || !user) return;
-
-    const loadMessages = async () => {
-      // 実際の実装:
-      // const { data, error } = await supabase
-      //   .from('messages')
-      //   .select('*')
-      //   .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-      //   .or(`sender_id.eq.${selectedContact.id},receiver_id.eq.${selectedContact.id}`)
-      //   .order('created_at', { ascending: true })
-      //   .limit(50);
-      
-      // デモ用のモックメッセージ
-      setMessages([
-        { id: 1, sender_id: selectedContact.id, text: 'こんにちは!', created_at: new Date() },
-        { id: 2, sender_id: user.id, text: 'やあ、元気?', created_at: new Date() }
-      ]);
-    };
-
-    loadMessages();
-
-    // リアルタイム購読
-    // const channel = supabase
-    //   .channel('messages')
-    //   .on('postgres_changes', 
-    //     { event: 'INSERT', schema: 'public', table: 'messages' },
-    //     (payload) => setMessages(prev => [...prev, payload.new])
-    //   )
-    //   .subscribe();
-
-    // return () => supabase.removeChannel(channel);
+    
+    // デモ用のモックメッセージ
+    setMessages([
+      { id: 1, sender_id: selectedContact.id, text: 'こんにちは!', created_at: new Date() },
+      { id: 2, sender_id: user.id, text: 'やあ、元気?', created_at: new Date() }
+    ]);
   }, [selectedContact, user]);
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!input.trim() || !selectedContact || !user) return;
 
     const newMessage = {
       sender_id: user.id,
       receiver_id: selectedContact.id,
       text: input,
-      created_at: new Date()
+      created_at: new Date(),
+      id: Date.now()
     };
 
-    // Supabaseに保存
-    // await supabase.from('messages').insert([newMessage]);
-
-    setMessages(prev => [...prev, { ...newMessage, id: Date.now() }]);
+    setMessages(prev => [...prev, newMessage]);
     setInput('');
   };
 
@@ -445,38 +322,16 @@ export default function IntegratedApp() {
   const [chatOpen, setChatOpen] = useState(false);
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    // セッション確認
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-    };
-
-    checkSession();
-
-    // 認証状態の変更を監視
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogin = async () => {
-    // Google OAuth ログイン
-    // await supabase.auth.signInWithOAuth({ provider: 'google' });
-    
-    // デモ用: 自動ログイン
+  const handleLogin = () => {
     setUser({ 
       id: 'demo-user-1', 
-      email: 'user@example.com',
-      user_metadata: { name: 'デモユーザー' }
+      email: 'user@example.com'
     });
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
     setUser(null);
+    setChatOpen(false);
   };
 
   return (

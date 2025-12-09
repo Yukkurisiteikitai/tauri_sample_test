@@ -1,7 +1,7 @@
 {
-  "productName": "Tauri React Sample",
+  "productName": "Browser Chat App",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.browser.chat",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:5173",
@@ -12,10 +12,12 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 800,
         "resizable": true,
-        "title": "Tauri + React Sample",
-        "width": 800
+        "title": "Browser & Chat",
+        "width": 1400,
+        "minHeight": 600,
+        "minWidth": 1000
       }
     ],
     "security": {
