@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Send, MessageCircle, User, Search, ArrowLeft, LogIn, LogOut, Users } from 'lucide-react';
 
 // 設定
-const BRAVE_API_KEY = 'BSATOBIc-hgGEkP7SRcn_q0HLzeMPMK';
+const BRAVE_API_KEY = 'YOUR_BRAVE_API_KEY';
 
 // ブラウザコンポーネント
 function BrowserApp() {
