@@ -31,3 +31,9 @@ src-tauri/Cargo.lock
 # Build
 target
 Cargo.lock
+
+# 秘密情報。絶対に追跡しない
+.env
+.env.*
+!.env.example
+!sample.env
